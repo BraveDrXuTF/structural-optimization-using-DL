@@ -14,7 +14,7 @@ class MyProblem(ea.Problem):  # 继承Problem父类
 
         name = 'MyProblem'  # 初始化name(函数名称,可以随意设置)
         M = 1  # 初始化M(目标维数)
-        maxormins = [-1]  # 初始化目标最小最大化标记列表,1:min;-1:max
+        maxormins = [1]  # 初始化目标最小最大化标记列表,1:min;-1:max
         Dim = 2  # 初始化Dim(决策变量维数)
         varTypes = [0] * Dim  # 初始化决策变量类型,0:连续;1:离散
         lb = [0, 0]  # 决策变量下界
