@@ -14,7 +14,7 @@ MUTATION_RATE = 0.005
 N_GENERATIONS = 50
 X_BOUND = [0.1, 1.1]
 Y_BOUND = [0.1, 1.1]
-MODEL_URL = '/home/xutengfei/jiegouyouhua/mybestmodel.h5'
+MODEL_URL = 'mybestmodel.h5'
 
 
 def F(x, y):

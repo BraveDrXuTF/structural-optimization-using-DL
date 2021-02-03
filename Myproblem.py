@@ -4,7 +4,7 @@ import numpy as np
 import geatpy as ea
 import math
 from tensorflow import keras
-MODEL_URL = '/home/xutengfei/jiegouyouhua/mybestmodel.h5'
+MODEL_URL = 'mybestmodel.h5'
 model = keras.models.load_model(MODEL_URL)
 
 
