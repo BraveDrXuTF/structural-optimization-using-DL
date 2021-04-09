@@ -6,14 +6,16 @@ import matplotlib.pyplot as plt
 import os
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+from math import sqrt
 
+# 可以算出最小值和真实最小值的差别
 DNA_SIZE = 24
 POP_SIZE = 200
 CROSSOVER_RATE = 0.8
 MUTATION_RATE = 0.005
-N_GENERATIONS = 50
-X_BOUND = [0.1, 1.1]
-Y_BOUND = [0.1, 1.1]
+N_GENERATIONS = 10
+X_BOUND = [0.01, 0.5]
+Y_BOUND = [0.01, 0.5]
 MODEL_URL = 'mybestmodel.h5'
 
 
@@ -37,7 +39,7 @@ def plot_3d(ax, model_url=MODEL_URL):
 
     Z = F(X, Y)
     ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm)
-    ax.set_zlim(-10, 10)
+    ax.set_zlim(-20, 20)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
@@ -48,6 +50,9 @@ def plot_3d(ax, model_url=MODEL_URL):
 def get_fitness(pop, model_url=MODEL_URL):
     x, y = translateDNA(pop)
     pred = -F_net(x, y)  # the smaller F(x,y), the bigger fitness
+    # 适应度约束法
+    con = (4*x/sqrt(3)+sqrt(3)*y)
+    pred[con > 1] = -10000
 
     return (pred - np.min(pred)) + 1e-3
 
@@ -79,7 +84,7 @@ def crossover_and_mutation(pop, CROSSOVER_RATE=0.8):
     return new_pop
 
 
-def mutation(child, MUTATION_RATE=0.003):
+def mutation(child, MUTATION_RATE=0.3):
     if np.random.rand() < MUTATION_RATE:  # 以MUTATION_RATE的概率进行变异
         mutate_point = np.random.randint(0, DNA_SIZE)  # 随机产生一个实数，代表要变异基因的位置
         child[mutate_point] = child[mutate_point] ^ 1  # 将变异点的二进制为反转
@@ -98,6 +103,9 @@ def print_info(pop):
     x, y = translateDNA(pop)
     print("最优的基因型：", pop[max_fitness_index])
     print("(x, y):", (x[max_fitness_index], y[max_fitness_index]))
+    predict = F(x[max_fitness_index], y[max_fitness_index])
+    real = F(sqrt(3)/7, sqrt(3)/7)
+    print(real, predict, abs(real-predict)/real)
 
 
 if __name__ == "__main__":
@@ -114,10 +122,38 @@ if __name__ == "__main__":
             sca.remove()
         sca = ax.scatter(x, y, F_net(x, y), c='black', marker='o')
         plt.show()
-        plt.pause(0.1)
-        pop = np.array(crossover_and_mutation(pop, CROSSOVER_RATE))
+        plt.pause(0.05)
+        pop_son = np.array(crossover_and_mutation(pop, CROSSOVER_RATE))
+
         # F_values = F(translateDNA(pop)[0], translateDNA(pop)[1])#x, y --> Z matrix
+
+        # 筛选获得符合约束条件的坐标点
+        # pop ->popson ;popson+pop->pop
+
+        # 采用这种方法约束（不满足直接删去）会消除大量的点，不好
+        # x_con, y_con = translateDNA(pop)
+        # con = (4*x_con/sqrt(3)+sqrt(3)*y_con)
+        # pop = pop[con <= 1]
+
+        # x_son_con, y_son_con = translateDNA(pop_son)
+        # con_son = (4*x_son_con/sqrt(3)+sqrt(3)*y_son_con)
+        # pop_son = pop_son[con_son <= 1]
+
+        # pop = np.concatenate((pop, pop_son), axis=0)
+        # fitness = get_fitness(pop)
+        # # argsort默认从小到大排序,因此取-fitness
+        # pop = pop[np.argsort(-fitness), :]
+
+        # if pop.shape[0] > POP_SIZE:
+        #     pop = pop[:POP_SIZE]
+        #     fitness = fitness[:POP_SIZE]
+
+        pop = np.concatenate((pop, pop_son), axis=0)
         fitness = get_fitness(pop)
+        # argsort默认从小到大排序,因此取-fitness
+        pop = pop[np.argsort(-fitness), :]
+        pop = pop[:POP_SIZE]
+        fitness = fitness[:POP_SIZE]
         pop = select(pop, fitness)  # 选择生成新的种群
 
     print_info(pop)
