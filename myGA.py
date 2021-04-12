@@ -18,6 +18,8 @@ X_BOUND = [0.01, 0.5]
 Y_BOUND = [0.01, 0.5]
 MODEL_URL = 'mybestmodel.h5'
 
+# 绘制直方图一类的DM；“树形结构”；或许根本不需要什么算法？
+
 
 def F(x, y):
     return 4/(3*x)+1/y

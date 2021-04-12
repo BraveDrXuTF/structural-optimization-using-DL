@@ -6,12 +6,11 @@ import matplotlib.pyplot as plt
 import os
 xsize = 2
 model_input = tf.keras.layers.Input(shape=(xsize,))
-net = tf.keras.layers.Dense(4*xsize, activation='relu')(model_input)
-net = tf.keras.layers.Dense(2*xsize, activation='relu')(net)
+net = tf.keras.layers.Dense(3*xsize, activation='relu')(model_input)
+net = tf.keras.layers.Dense(3*xsize, activation='relu')(net)
+# net = tf.keras.layers.Dense(xsize, activation='relu')(net)
 net = tf.keras.layers.Dense(1, activation='relu')(net)
-# net = tf.nn.leaky_relu(net)
 model = tf.keras.models.Model(inputs=model_input, outputs=net)
-
 model.compile(optimizer='adam',
               loss='msle',
               metrics=[tf.keras.metrics.MeanSquaredLogarithmicError()])
@@ -19,18 +18,18 @@ model.compile(optimizer='adam',
 
 # 训练集和测试集生成
 if __name__ == '__main__':
-    num_trainsamples = 100000
+    num_trainsamples = 200000
     train_data = np.zeros((num_trainsamples, 3))
     for i in range(num_trainsamples):
-        train_data[i][0] = random.uniform(0.0001, 0.5)
-        train_data[i][1] = random.uniform(0.0001, 0.5)
+        train_data[i][0] = random.uniform(0.0001, 0.3)
+        train_data[i][1] = random.uniform(0.0001, 0.3)
         train_data[i][2] = 4/(train_data[i][0]*3)+1/train_data[i][1]
     X = train_data[:, 0:2]
     y = train_data[:, 2].reshape(num_trainsamples, 1)
     num_testsamples = 2000
     test_data = np.zeros((num_testsamples, 4))
     for i in range(num_testsamples):
-        test_data[i][0] = random.uniform(0.1, 1.1)
+        test_data[i][0] = random.uniform(0.1, 0.3)
         test_data[i][1] = random.uniform(0.1, 1.1)
         test_data[i][2] = 4/(test_data[i][0]*3)+1 / \
             test_data[i][1]  # true value in green
@@ -46,12 +45,14 @@ if __name__ == '__main__':
         keras.callbacks.ModelCheckpoint(output_model_file,
                                         save_best_only=True),
     ]
-    model.load_weights(output_model_file)
-    history = model.fit(X, y, epochs=10, validation_data=(
+    # model.load_weights(output_model_file)
+    history = model.fit(X, y, epochs=10, shuffle=True, validation_data=(
         test_data[:, 0:2], test_data[:, 2].reshape(num_testsamples, 1)), callbacks=callbacks)
-
+    # history = model.fit(X, y, epochs=10, validation_data=(
+    #     test_data[:, 0:2], test_data[:, 2].reshape(num_testsamples, 1)), callbacks=callbacks)
+    print('tag:done!')
     predictions = model.predict(test_data[:, 0:2])
-
+    #test data的第三列才是预测的
     for i in range(num_testsamples):
         test_data[i][3] = predictions[i]
 
